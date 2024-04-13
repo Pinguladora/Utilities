@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "C-binary app"
+version = "1.0.0"
+description = "An example on how to generate a C-application using Cython and Pyinstaller."
+authors = ["Pinguladora"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.13"
+cython = "^3.0.10"
+pyinstaller = "^6.6.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
