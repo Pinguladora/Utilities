@@ -1,0 +1,15 @@
+packages/*
+melange-cache/*
+generated/*
+local-melange.rsa*
+melange.rsa*
+dag.svg
+.idea
+.packagerules
+.melange.k8s.yaml
+packages.log
+*.iml
+APKINDEX.tar.gz
+
+# macOS
+.DS_Store

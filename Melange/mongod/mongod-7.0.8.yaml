@@ -1,0 +1,89 @@
+package:
+  name: mongod
+  version: 7.0.8
+  epoch: 0
+  description: "Mongo database"
+  copyright:
+    - license: SSPLv1
+  dependencies:
+    runtime:
+      - glibc
+      - glibc-locale-posix
+      - ld-linux
+      - libbrotlicommon1
+      - libbrotlidec1
+      - libcrypto3
+      - libcurl-openssl4
+      - libgcc
+      - libidn2
+      - libnghttp2-14
+      - libproc-2-0
+      - libpsl
+      - libssl3
+      - libstdc++
+      - libunistring
+      - ncurses
+      - ncurses-terminfo-base
+      - openssl-config
+      - procps
+      - wolfi-baselayout
+      - xz
+      - zlib
+# Build dependencies
+environment:
+  contents:
+    repositories:
+      - https://packages.wolfi.dev/os
+      # - https://dl-cdn.alpinelinux.org/alpine/edge/main/x86_64
+    keyring:
+      - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+    packages:
+      # - build-essential
+      # - libssl-dev
+      # - libcurl4-openssl-dev
+      # - liblzma-dev
+      # - python-dev
+      # - python-dev-is-python3
+      - wolfi-base
+      - build-base
+      - openssl-dev
+      - curl-dev
+      - xz-dev
+      - python-3.10-dev
+      - py3.10-pip
+      # - llvm-lld
+      - scons
+      # Solves WARNING: The build_metrics tool might not work as intended due to a failed import
+      # - py3-jsonschema
+
+pipeline:
+  # - uses: fetch
+  #   with:
+  #     expected-sha256: 9bfb291379bde902a9c35ee30455a335381fec4836f59f3ef399eeef07501412
+  #     # uri: https://github.com/mongodb/mongo/archive/refs/tags/r${{package.version}}.tar.gz
+  #     uri: https://fastdl.mongodb.org/src/mongodb-src-r${{package.version}}.tar.gz
+  #     extract: true
+  - uses: git-checkout
+    with:
+      repository: https://github.com/mongodb/mongo
+      branch: r${{package.version}}
+      destination: mongo
+  - name: Check GCC requirements
+    runs: gcc --version
+  - name: Prepares mongod server
+    runs: |
+      cd mongo
+      python3 -m pip install -r etc/pip/compile-requirements.txt
+      python3 -m pip install -r etc/pip/components/build_metrics.req
+
+      python3 buildscripts/scons.py --linker=gold DESTDIR=/opt/mongo install-mongod -j1 --disable-warnings-as-errors
+
+  - uses: strip
+
+update:
+  enabled: true
+  github:
+    identifier: mongodb/mongo
+    strip-prefix: r
+    use-tag: true
+    tag-filter: "7"

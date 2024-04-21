@@ -1,0 +1,61 @@
+package:
+  name: langfuse-web
+  version: 2.30.2
+  epoch: 0
+  description: "Langfuse observability tool"
+  checks:
+    disabled:
+      - usrlocal
+  target-architecture:
+    - all
+  copyright:
+    - license: MIT
+      paths:
+        - "!*ee/"
+      attestation: |
+        Copyright 2023, GmbH
+  dependencies:
+    runtime:
+
+environment:
+  contents:
+    repositories:
+      - https://packages.wolfi.dev/os
+    keyring:
+      - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+    packages:
+      - wolfi-base
+      - libcrypto3
+      - libssl3
+      - corepack
+      - pnpm
+      - npm
+      - dumb-init
+      - nodejs-20
+
+pipeline:
+  - uses: fetch
+    with:
+      expected-sha256: e5f0ab814f22e472e3a68420ef20bba76f41796b3a04e4dc656bbde4ca6c620e
+      uri: https://github.com/langfuse/langfuse/archive/refs/tags/v${{package.version}}.tar.gz
+      extract: true
+  - name: Prune and build
+    runs: |
+      export NEXT_TELEMETRY_DISABLED=1
+      export PORT=3000
+      npm install turbo --global
+      corepack enable
+      corepack prepare pnpm@8.15.5 --activate
+      turbo prune --scope=web --docker
+      pnpm install --frozen-lockfile
+      rm -f ./web/src/middleware.ts
+      npm install -g --no-package-lock --no-save prisma
+  - uses: strip
+
+update:
+  enabled: true
+  github:
+    identifier: langfuse/langfuse
+    strip-prefix: v
+    use-tag: true
+    tag-filter: "2"
